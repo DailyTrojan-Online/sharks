@@ -355,7 +355,7 @@
 				</div>
 				<div class="flex-hor">
 					<button id="delete-button" onclick={deleteLetter}>Delete</button>
-					<button id="enter-button">Submit</button>
+					<button id="enter-button" onclick={checkWord}>Submit</button>
 				</div>
 			</div>
 		</div>
