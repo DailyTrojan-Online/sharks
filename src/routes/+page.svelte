@@ -12,8 +12,6 @@
 	import { fly, slide } from "svelte/transition";
 	import { cubicIn, cubicOut } from "svelte/easing";
 	import { Spring } from "svelte/motion";
-	// console.log(words)
-
 	let gameSplash: HTMLElement | null = null;
 	let gameDate: HTMLElement | null = null;
 	let DTGCore: DTGameCore;
