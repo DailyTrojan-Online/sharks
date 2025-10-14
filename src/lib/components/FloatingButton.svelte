@@ -65,7 +65,8 @@
 		const delta = (now - (lastTime ?? now)) / 1000; // seconds
 		lastTime = now;
 		t += delta * 0.5; // 1.5 = speed factor, adjust as needed
-		if(fear) {}
+		if (fear) {
+		}
 		angle = perlin(t) * 12;
 		translationY = perlin(t + 100) * 4; // -10px to +10px
 		animationFrame = requestAnimationFrame(animate);
@@ -77,15 +78,15 @@
 	});
 </script>
 
-<div class="floating-button-wrapper"
-		style:transform={`translateY(${translationY}px) rotate(${angle}deg)`}>
+<div
+	class="floating-button-wrapper"
+	style:transform={`translateY(${translationY}px) rotate(${angle}deg)`}
+>
 	<button
-	disabled={disabled}
-	
+		{disabled}
 		class="floating-button"
 		{onclick}
-		style:background={scale[Math.min(timesPlayed, 9)]}
-		>{character}</button
+		style:background={scale[Math.min(timesPlayed, 9)]}>{character}</button
 	>
 </div>
 
@@ -93,6 +94,11 @@
 	.floating-button-wrapper {
 		height: 80px;
 		width: 80px;
+		z-index: 10;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: relative;
 	}
 	.floating-button {
 		background: #007acc;
@@ -100,9 +106,9 @@
 		border-radius: 12px;
 		color: white;
 		cursor: pointer;
-		font-size: 1.5rem;
-		height: 80px;
-		width: 80px;
+		font-size: 2.15rem;
+		height: 100%;
+		width: 100%;
 		flex-shrink: 0;
 		display: flex;
 		font-weight: bold;
@@ -112,12 +118,14 @@
 		transition:
 			background 0.3s,
 			transform 0.2s;
-
-		box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.2);
+		z-index: 10;
+		box-shadow: inset 0 -6px 0 rgba(8, 0, 39, 0.2);
 	}
 	.floating-button:disabled {
-		background: rgb(75, 90, 123) !important;
-		opacity: .5;
+		background: transparent !important;
+		border: 4px dashed rgb(75, 90, 123);
+		color: rgb(75, 90, 123);
+		opacity: 0.5;
 		cursor: unset !important;
 	}
 
@@ -126,17 +134,24 @@
 	}
 
 	.floating-button:active {
-		transform: scale(.9);
+		transform: scale(0.9);
 	}
-
 
 	.floating-button:disabled:hover {
 		transform: scale(1);
 	}
 
-
 	.floating-button:disabled:active {
 		transform: scale(1);
 	}
 
+	@media (max-width: 575px) {
+		.floating-button {
+			font-size: 2rem;
+		}
+		.floating-button-wrapper {
+			height: 65px;
+			width: 65px;
+		}
+	}
 </style>
