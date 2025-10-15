@@ -17,6 +17,7 @@
 	let DTGCore: DTGameCore;
 
 	let totalLetters = 9;
+	let vowelCount = 2;
 	let maxWordLength = 15;
 
 	let typedWord = $state("");
@@ -31,16 +32,16 @@
 	function playGame() {
 		DTGCore.hideSplashScreen();
 
-			if (gameOver) {
-				finishGame();
-			}
+		if (gameOver) {
+			finishGame();
+		}
 	}
-	let allLetters = "ETAOINSHRDLUCMWFGYPBVKJXQZ".split("");
+	let allLetters = "TNSHRDLCMWFGYPBVKJXQZ".split("");
 	const weights = [
-		12.7, 9.1, 8.2, 7.5, 7.0, 6.7, 6.3, 6.1, 6.0, 4.3, 4.0, 2.8, 2.8, 2.4, 2.4,
-		2.2, 2.0, 2.0, 1.9, 1.5, 1.0, 0.8, 0.15, 0.15, 0.1, 0.07,
+		9.1, 6.7, 6.3, 6.1, 6, 4.3, 4, 2.8, 2.4, 2.4, 2.2, 2, 2, 1.9, 1.5, 1, 0.8,
+		0.15, 0.15, 0.1, 0.07,
 	];
-
+	let vowels = "AEIOU".split("");
 	// Helper: weighted random choice
 	function weightedChoice(arr: string | string[], weights: number[]) {
 		const total = weights.reduce((a: any, b: any) => a + b, 0);
@@ -153,7 +154,19 @@
 	}
 
 	function init() {
-		for (let i = 0; i < totalLetters; i++) {
+		vowelCount += DTGCore.randomInt(0, 2);
+
+		for (let i = 0; i < vowelCount; i++) {
+			let randomIndex = Math.floor(DTGCore.randomFloat() * vowels.length);
+			letters.push(vowels[randomIndex]);
+			uses.push(0);
+			disabled.push(false);
+
+			//remove letter
+			vowels.splice(randomIndex, 1);
+		}
+
+		for (let i = 0; i < totalLetters - vowelCount; i++) {
 			let randomIndex = weightedChoice(allLetters, weights);
 			letters.push(allLetters[randomIndex]);
 			uses.push(0);
@@ -162,6 +175,16 @@
 			//remove letter
 			allLetters.splice(randomIndex, 1);
 		}
+
+		const shuffled = letters.slice(); 
+
+		for (let i = shuffled.length - 1; i > 0; i--) {
+			const j = Math.floor(DTGCore.randomFloat() * (i + 1)); 
+
+			[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; 
+		}
+		letters = shuffled;
+
 		//count how many words can be made with these letters
 		let possibleWords = words.filter((word) => {
 			if (word.length > maxWordLength) return false;
@@ -244,7 +267,7 @@
 		}
 		let points = 4;
 		for (let i = 1; i <= typedWord.length - 4; i++) {
-			points += i;
+			points += i * 2;
 		}
 		givePoints(points);
 		if (wordsFound % sharkInterval == 0) {
@@ -512,8 +535,10 @@
 				}}><i class="ti ti-x"></i></button
 			>
 			<div class="flex-hor">
-				<button onclick={DTGCore.homeRedirect}
-					><i class="ti ti-device-gamepad"></i>All Games</button
+				<button
+					onclick={() => {
+						DTGCore.homeRedirect();
+					}}><i class="ti ti-device-gamepad"></i>All Games</button
 				>
 				<button class="button-share" onclick={copyResultsString}
 					><i class="ti ti-share"></i> Share Results</button
@@ -635,6 +660,7 @@
 		width: 100%;
 		height: 100%;
 		flex-grow: 1;
+		max-height: 400px;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
@@ -667,6 +693,8 @@
 	}
 	.letters-wrapper {
 		width: 100%;
+		flex-grow: 1;
+		flex-shrink: 1;
 		bottom: 0;
 		left: 0;
 		position: relative;
