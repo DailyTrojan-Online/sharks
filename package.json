@@ -23,6 +23,7 @@
 	"dependencies": {
 		"@number-flow/svelte": "^0.3.9",
 		"@sveltejs/adapter-static": "^3.0.10",
+		"@tsparticles/engine": "^3.9.1",
 		"@types/chroma-js": "^3.1.1",
 		"an-array-of-english-words": "^2.0.0",
 		"chroma-js": "^3.1.2"
