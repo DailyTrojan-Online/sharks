@@ -977,7 +977,7 @@
     }
     .waves {
         width: 100%;
-        padding-bottom: 50px;
+        padding-bottom: 100px;
         padding-top: 40px;
     }
     .wave-background {
