@@ -123,8 +123,8 @@
 	}
 	.floating-button:disabled {
 		background: transparent !important;
-		border: 4px dashed rgb(75, 90, 123);
-		color: rgb(75, 90, 123);
+		border: 4px dashed var(--main-text-color);
+		color: var(--main-text-color);
 		opacity: 0.5;
 		cursor: unset !important;
 	}

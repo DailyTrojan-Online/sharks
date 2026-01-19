@@ -568,7 +568,8 @@
                 class="fin"
                 class:visible={(wordsFound + 1) % sharkInterval == 0}
             >
-                <img width="60" src={Fin} alt="Shark fin" />
+                <FinComponent fill="var(--main-text-color)" width="60"
+                ></FinComponent>
             </div>
             <div class="wave-background"></div>
             <div class="waves">
@@ -1000,6 +1001,9 @@
 		padding-top: 0px;
 		max-width: 500px; */
         z-index: 5;
+    }
+    :global(.dark-mode .wave-background) {
+        background: linear-gradient(to bottom, #0c79b9, #0b4e75 15%, #040428);
     }
     button {
         z-index: 10;
