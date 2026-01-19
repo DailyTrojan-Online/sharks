@@ -35,7 +35,6 @@
         setTimeout(() => {
             splashReady = true;
         }, 1);
-        playGame();
     });
 
     function playGame() {
@@ -43,6 +42,11 @@
 
         if (gameOver) {
             finishGame();
+        }
+        let firstTime = localStorage.getItem("firstTimePlayed") == null;
+        if (firstTime) {
+            localStorage.setItem("firstTimePlayed", "true");
+            showHowTo = true;
         }
     }
     let allLetters = "TNSHRDLCMWFGYPBVKJXQZ".split("");
@@ -74,6 +78,8 @@
 
     let gameOver = $state(false);
     let showModal = $state(false);
+    let showFoundWords = $state(false);
+    let showHowTo = $state(false);
 
     let message = $state("");
     let messageTimeout: number;
@@ -167,6 +173,9 @@
     function init() {
         vowelCount += DTGCore.randomInt(0, 2);
         DTGCore.randomFloat();
+        for (let i = 0; i < 20; i++) {
+            DTGCore.randomFloat();
+        }
 
         for (let i = 0; i < vowelCount; i++) {
             let randomIndex = Math.floor(DTGCore.randomFloat() * vowels.length);
@@ -363,8 +372,13 @@
         })(navigator.userAgent || navigator.vendor);
         return check;
     };
-    let completeCopyFormat =
-        "{0}\nI found {1} word{2} before all my letters were eaten in Sharks!\n{3}";
+    function capitalize(str) {
+        if (typeof str !== "string" || str.length === 0) {
+            return "";
+        }
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+    let completeCopyFormat = "{0}\nI found {1} word{2} in Sharks!\n{3}";
     function copyResultsString() {
         let date = new Intl.DateTimeFormat("en-US", {
             day: "2-digit",
@@ -491,23 +505,25 @@
                     </div>
                 </div>
                 <div class="progress-dots" bind:this={progressDotWrapper}>
-                    <div class="progress-dot-line"
-                        style:--tx={progressDotOffset + "px"}>
-                    {#each Array(wordsLeftToFind + wordsFound) as _, i}
-                        <div
-                            class:dot-shark={i % sharkInterval == 3 &&
-                                i >= wordsFound}
-                            class="dot"
-                            class:dot-filled={i < wordsFound}
-                        >
-                            {#if i % sharkInterval == 3 && i >= wordsFound}
-                                <FinComponent
-                                    width="20px"
-                                    fill="var(--outline)"
-                                />
-                            {/if}
-                        </div>
-                    {/each}
+                    <div
+                        class="progress-dot-line"
+                        style:--tx={progressDotOffset + "px"}
+                    >
+                        {#each Array(wordsLeftToFind + wordsFound) as _, i}
+                            <div
+                                class:dot-shark={i % sharkInterval == 3 &&
+                                    i >= wordsFound}
+                                class="dot"
+                                class:dot-filled={i < wordsFound}
+                            >
+                                {#if i % sharkInterval == 3 && i >= wordsFound}
+                                    <FinComponent
+                                        width="20px"
+                                        fill="var(--outline)"
+                                    />
+                                {/if}
+                            </div>
+                        {/each}
                     </div>
                 </div>
             </div>
@@ -567,25 +583,43 @@
                         />
                     {/each}
                 </div>
-                {#if gameOver}
-                    <div class="flex-hor">
+                {#if !gameOver}
+                    <div class="flex-hor" style:margin-bottom="10px">
                         <button
                             id="delete-button"
+                            onclick={deleteLetter}
+                            style:width="85px">Delete</button
+                        >
+                        <button
+                            style:width="45px"
+                            id="delete-button"
                             onclick={() => {
-                                showModal = true;
-                            }}>View Results</button
+                                showHowTo = true;
+                            }}>?</button
                         >
-                    </div>
-                {:else}
-                    <div class="flex-hor">
-                        <button id="delete-button" onclick={deleteLetter}
-                            >Delete</button
-                        >
-                        <button id="enter-button" onclick={checkWord}
-                            >Submit</button
+                        <button
+                            id="enter-button"
+                            onclick={checkWord}
+                            style:width="85px">Submit</button
                         >
                     </div>
                 {/if}
+                <div class="flex-hor">
+                    <button
+                        style:width="132px"
+                        id="delete-button"
+                        onclick={() => {
+                            showFoundWords = true;
+                        }}>View Words</button
+                    >
+                    <button
+                        id="delete-button"
+                        style:width="132px"
+                        onclick={() => {
+                            showModal = true;
+                        }}>View {gameOver ? "Results" : "Score"}</button
+                    >
+                </div>
             </div>
         </div>
     </div>
@@ -594,9 +628,10 @@
     <div class="modal-content">
         <div class="modal-inner">
             <img width="80" src={SharksLogo} alt="sharks logo" />
-            <h1 id="modal-title">All done!</h1>
+            <h1 id="modal-title">{gameOver ? "All done!" : "In deep water"}</h1>
             <h2 style:font-weight="normal">
-                You found <strong id="result-time">{wordsFound}</strong> words.
+                {gameOver ? "You" : "You've"} found
+                <strong id="result-time">{wordsFound}</strong> words.
             </h2>
             <button
                 class="close-button"
@@ -622,10 +657,87 @@
         </div>
     </div>
 </div>
+<div
+    class="modal-wrapper"
+    id="result-modal"
+    class:modal-visible={showFoundWords}
+>
+    <div class="modal-content">
+        <div class="modal-inner">
+            <h1 id="modal-title">Found words</h1>
+            <div class="word-list">
+                {#each foundWords as word}
+                    <h2>
+                        {capitalize(word)}
+                    </h2>
+                {/each}
+            </div>
+            <button
+                class="close-button"
+                aria-label="close"
+                onclick={() => {
+                    showFoundWords = false;
+                }}><i class="ti ti-x"></i></button
+            >
+        </div>
+    </div>
+</div>
+<div class="modal-wrapper" id="result-modal" class:modal-visible={showHowTo}>
+    <div class="modal-content">
+        <div class="modal-inner">
+            <h1 id="modal-title">How to play</h1>
+            <button
+                class="close-button"
+                aria-label="close"
+                onclick={() => {
+                    showHowTo = false;
+                }}><i class="ti ti-x"></i></button
+            >
+            <h2 style:font-weight="normal">
+                Use the letters to form words. Longer words award more points.
+            </h2>
+            <img class="howto-gif" src="./text-howto.gif" alt="" />
+            <h2 style:font-weight="normal">
+                When the shark appears, it will eat one of your most used
+                letters.
+            </h2>
+            <img class="howto-gif" src="./shark-howto.gif" alt="" />
+            <h2 style:font-weight="normal">
+                The game ends when you've found all possible words.
+            </h2>
+        </div>
+    </div>
+</div>
 
 <div id="tsparticles"></div>
 
 <style>
+    .modal-inner {
+        box-sizing: border-box;
+        padding-left: 30px;
+        padding-right: 30px;
+    }
+    .howto-gif {
+        width: 100%;
+        max-width: 420px;
+        box-sizing: border-box;
+        border-radius: 8px;
+    }
+    .word-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 15px;
+        min-height: 100px;
+        padding: 0 30px;
+        box-sizing: border-box;
+        align-content: flex-start;
+        justify-content: center;
+    }
+    .word-list h2 {
+        margin: 0 !important;
+        font-weight: normal;
+        height: fit-content !important;
+    }
     #tsparticles {
         background: red;
     }
@@ -701,9 +813,15 @@
     .progress-dots {
         width: 100%;
         overflow: hidden;
-        height:40px;
+        height: 40px;
         position: relative;
-        mask-image: linear-gradient(to right, transparent, black 25%, black 75%, transparent);
+        mask-image: linear-gradient(
+            to right,
+            transparent,
+            black 25%,
+            black 75%,
+            transparent
+        );
     }
     .progress-dot-line {
         --tx: 0px;
