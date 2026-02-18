@@ -76,6 +76,16 @@
 		animate();
 		return () => cancelAnimationFrame(animationFrame);
 	});
+	let down = false;
+	function  pointerdown() {
+	down = true;
+	}
+	
+	function pointerup() {
+	if(!down || !onclick) return;
+	down = false;
+	onclick();
+	}
 </script>
 
 <div
@@ -85,7 +95,8 @@
 	<button
 		{disabled}
 		class="floating-button"
-		{onclick}
+		onpointerup={pointerup}
+		onpointerdown={pointerdown}
 		style:background={scale[Math.min(timesPlayed, 9)]}>{character}</button
 	>
 </div>
