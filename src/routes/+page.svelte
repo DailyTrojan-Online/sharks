@@ -1070,7 +1070,7 @@
 
     @media (max-width: 575px) {
         .letters {
-            gap: 14px;
+            gap:8px;
         }
     }
     .modal-content a {
@@ -1084,4 +1084,5 @@
         margin-top: 0px;
         margin-bottom: 30px;
     }
+    
 </style>

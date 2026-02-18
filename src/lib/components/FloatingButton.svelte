@@ -161,8 +161,8 @@
 			font-size: 2rem;
 		}
 		.floating-button-wrapper {
-			height: 65px;
-			width: 65px;
+			height: 60px;
+			width: 60px;
 		}
 	}
 </style>
