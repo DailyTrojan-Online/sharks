@@ -4,7 +4,7 @@
     import NumberFlow from "@number-flow/svelte";
     import SharksLogo from "$lib/assets/sharks.svg";
     import { DTGameCore } from "$lib/dailytrojan-lib/gameCore";
-    import DTLogo from "$lib/assets/dt-logo.png";
+    import DTLogo from "$lib/dailytrojan-lib/Games_Logo.svg";
     import FloatingButton from "$lib/components/FloatingButton.svelte";
     import Fin from "$lib/assets/fin.svg";
     import FinComponent from "$lib/components/Fin.svelte";
@@ -223,9 +223,6 @@
             maxLength = Math.max(w.length, maxLength);
             if (w.length == maxLength) maxI = i;
         });
-        console.log("Possible words:", possibleWords.length);
-        console.log(possibleWords);
-        console.log(maxLength, words[maxI]);
 
         let savedData = loadData("sharks-today");
         if (savedData != null && savedData.date == gameSeed) {
@@ -319,10 +316,8 @@
                     indexes.push(i);
                 }
             }
-            console.log(indexes);
             let i =
                 indexes[Math.floor(DTGCore.randomInt(0, indexes.length - 1))];
-            console.log(i);
             disabled[i] = true;
             //filter out now based on the new disabled;
             correctWords = correctWords.filter((word) => {
@@ -334,7 +329,6 @@
                 }
                 return true;
             });
-            console.log(correctWords);
         }
         foundWords.push(typedWord.toLowerCase());
         let isUnfoundWord = false;
@@ -467,14 +461,21 @@
 <svelte:window on:keydown={handleKeyDown} />
 
 <header>
-    <img
-        id="dt-logo"
-        src={DTLogo}
-        height="50"
-        width="auto"
-        style="cursor: pointer;"
-        alt="Daily Trojan Logo"
-    />
+    <div class="header-group header-group-left">
+        <img
+            id="dt-logo"
+            src={DTLogo}
+            height="50"
+            width="auto"
+            style="cursor: pointer;"
+            alt="Daily Trojan Logo"
+        />
+        
+    </div>
+    <h1>Sharks!</h1>
+    <div class="header-group header-group-right">
+        
+    </div>
 </header>
 <div class="game-splash-wrapper" id="splash" bind:this={gameSplash}>
     <div class="game-splash-inner" class:game-splash-ready={splashReady}>
@@ -494,7 +495,6 @@
 
 <main>
     <div class="game-wrapper">
-        <h1>Sharks!</h1>
         <div class="top-details">
             <div class="word-container" id="word-container"></div>
             <div class="points-bar">
