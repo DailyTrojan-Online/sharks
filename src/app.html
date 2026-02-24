@@ -1,15 +1,35 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		%sveltekit.head%
-	</head>
-	<body data-sveltekit-preload-data="hover">
-		<div style="display: contents">%sveltekit.body%</div>
-	</body>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        %sveltekit.head%
+    </head>
+    <body data-sveltekit-preload-data="hover">
+        <div style="display: contents">%sveltekit.body%</div>
+    </body>
 
-	<script>
+    <script>
+        function hideBackButton() {
+            const backButton = document.getElementById("game-back-button");
+            if (backButton) {
+                backButton.style.display = "none";
+            }
+        }
 
-</script>
+        function hideHeader() {
+            const header = document.getElementById("dt-logo");
+            if (header) {
+                header.style.display = "none";
+            }
+        }
+
+        function enableDarkMode() {
+            document.body.classList.add("dark-mode");
+        }
+
+        function disableDarkMode() {
+            document.body.classList.remove("dark-mode");
+        }
+    </script>
 </html>
