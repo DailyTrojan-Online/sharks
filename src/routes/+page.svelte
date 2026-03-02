@@ -379,7 +379,16 @@
             month: "2-digit",
             year: "numeric",
         }).format(new Date());
-        if (mobileCheck()) {
+        if(window.flutter_inappwebview != null) {
+          window.flutter_inappwebview.callHandler("requestShare", DTGCore.formatString(
+              completeCopyFormat,
+              date,
+              wordsFound,
+              wordsFound == 1 ? "" : "s",
+              window.location.href,
+          ))
+        }
+        else if (mobileCheck()) {
             navigator.share({
                 text: DTGCore.formatString(
                     completeCopyFormat,
@@ -462,19 +471,10 @@
 
 <header>
     <div class="header-group header-group-left">
-        <img
-            id="dt-logo"
-            src={DTLogo}
-            height="50"
-            width="auto"
-            style="cursor: pointer;"
-            alt="Daily Trojan Logo"
-        />
-        
     </div>
     <h1>Sharks!</h1>
     <div class="header-group header-group-right">
-        
+
     </div>
 </header>
 <div class="game-splash-wrapper" id="splash" bind:this={gameSplash}>
@@ -1084,5 +1084,5 @@
         margin-top: 0px;
         margin-bottom: 30px;
     }
-    
+
 </style>
