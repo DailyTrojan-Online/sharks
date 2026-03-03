@@ -385,7 +385,7 @@
               date,
               wordsFound,
               wordsFound == 1 ? "" : "s",
-              window.location.href,
+              "https://dailytrojan-online.github.io/sharks/",
           ))
         }
         else if (mobileCheck()) {
@@ -395,9 +395,9 @@
                     date,
                     wordsFound,
                     wordsFound == 1 ? "" : "s",
-                    window.location.href,
+                    "https://dailytrojan-online.github.io/sharks/",
                 ),
-                url: window.location.href,
+                url: "https://dailytrojan-online.github.io/sharks/",
             });
         } else {
             DTGCore.showToast("Results copied to clipboard!", "ti-clipboard");
@@ -407,7 +407,7 @@
                     date,
                     wordsFound,
                     wordsFound == 1 ? "" : "s",
-                    window.location.href,
+                    "https://dailytrojan-online.github.io/sharks/",
                 ),
             );
         }
