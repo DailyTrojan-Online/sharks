@@ -379,16 +379,18 @@
             month: "2-digit",
             year: "numeric",
         }).format(new Date());
-        if(window.flutter_inappwebview != null) {
-          window.flutter_inappwebview.callHandler("requestShare", DTGCore.formatString(
-              completeCopyFormat,
-              date,
-              wordsFound,
-              wordsFound == 1 ? "" : "s",
-              "https://dailytrojan-online.github.io/sharks/",
-          ))
-        }
-        else if (mobileCheck()) {
+        if (window.flutter_inappwebview != null) {
+            window.flutter_inappwebview.callHandler(
+                "requestShare",
+                DTGCore.formatString(
+                    completeCopyFormat,
+                    date,
+                    wordsFound,
+                    wordsFound == 1 ? "" : "s",
+                    "https://dailytrojan-online.github.io/sharks/",
+                ),
+            );
+        } else if (mobileCheck()) {
             navigator.share({
                 text: DTGCore.formatString(
                     completeCopyFormat,
@@ -470,11 +472,18 @@
 <svelte:window on:keydown={handleKeyDown} />
 
 <header>
-    <div class="header-group header-group-left">
-    </div>
+    <div class="header-group header-group-left"></div>
     <h1>Sharks!</h1>
-    <div class="header-group header-group-right">
 
+    <div class="header-group header-group-right">
+        <button
+            class="icon-button"
+            onclick={() => {
+                showHowTo = true;
+            }}
+        >
+            <i class="ti ti-help"></i>
+        </button>
     </div>
 </header>
 <div class="game-splash-wrapper" id="splash" bind:this={gameSplash}>
@@ -592,13 +601,6 @@
                             style:width="85px">Delete</button
                         >
                         <button
-                            style:width="45px"
-                            id="delete-button"
-                            onclick={() => {
-                                showHowTo = true;
-                            }}>?</button
-                        >
-                        <button
                             id="enter-button"
                             onclick={checkWord}
                             style:width="85px">Submit</button
@@ -713,6 +715,12 @@
 <div id="tsparticles"></div>
 
 <style>
+    .icon-button {
+        border: none;
+        min-width: 0;
+        flex-basis: unset !important;
+        background: transparent !important;
+    }
     .modal-inner {
         box-sizing: border-box;
         padding-left: 30px;
@@ -1070,7 +1078,7 @@
 
     @media (max-width: 575px) {
         .letters {
-            gap:8px;
+            gap: 8px;
         }
     }
     .modal-content a {
@@ -1084,5 +1092,4 @@
         margin-top: 0px;
         margin-bottom: 30px;
     }
-
 </style>
