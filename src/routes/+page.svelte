@@ -1088,7 +1088,7 @@
 
     @media (max-width: 575px) {
         .letters {
-            gap: 8px;
+            gap: 2.5vw;
         }
     }
     .modal-content a {

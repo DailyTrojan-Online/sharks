@@ -174,8 +174,9 @@
             font-size: 2rem;
         }
         .floating-button-wrapper {
-            height: 60px;
-            width: 60px;
+            height: 13.75vw;
+            width: 13.75vw;
         }
     }
+    
 </style>
