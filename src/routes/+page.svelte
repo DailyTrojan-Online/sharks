@@ -1,6 +1,10 @@
 <script lang="ts">
     import { tsParticles } from "@tsparticles/engine";
+    import { loadSlim } from "@tsparticles/slim";
+    import { loadEmittersPlugin } from "@tsparticles/plugin-emitters";
     import { onMount } from "svelte";
+    import chroma from "chroma-js";
+    import { loadFull } from "tsparticles";
     import NumberFlow from "@number-flow/svelte";
     import SharksLogo from "$lib/assets/sharks.svg";
     import { DTGameCore } from "$lib/dailytrojan-lib/gameCore";
@@ -14,6 +18,7 @@
     import { fly, slide } from "svelte/transition";
     import { cubicIn, cubicOut } from "svelte/easing";
     import { Spring } from "svelte/motion";
+    import Particles from "$lib/components/Particles.svelte";
     let gameSplash: HTMLElement | null = null;
     let gameDate: HTMLElement | null = null;
     let DTGCore: DTGameCore;
@@ -66,6 +71,7 @@
         }
         return arr.length - 1;
     }
+    let particles: Particles;
     let letters: string[] = $state([]);
     let uses: number[] = $state([]);
     let disabled: boolean[] = $state([]);
@@ -486,6 +492,7 @@
         </button>
     </div>
 </header>
+
 <div class="game-splash-wrapper" id="splash" bind:this={gameSplash}>
     <div class="game-splash-inner" class:game-splash-ready={splashReady}>
         <img width="80" src={SharksLogo} alt="Sharks! Logo" />
@@ -590,38 +597,41 @@
                             character={letter}
                             timesPlayed={uses[i]}
                             onclick={() => typeLetter(letter)}
+                            {particles}
                         />
                     {/each}
                 </div>
-                {#if !gameOver}
-                    <div class="flex-hor" style:margin-bottom="10px">
+                <div class="game-options">
+                    {#if !gameOver}
+                        <div class="flex-hor" style:margin-bottom="10px">
+                            <button
+                                id="delete-button"
+                                onclick={deleteLetter}
+                                style:width="85px">Delete</button
+                            >
+                            <button
+                                id="enter-button"
+                                onclick={checkWord}
+                                style:width="85px">Submit</button
+                            >
+                        </div>
+                    {/if}
+                    <div class="flex-hor">
+                        <button
+                            style:width="132px"
+                            id="delete-button"
+                            onclick={() => {
+                                showFoundWords = true;
+                            }}>View Words</button
+                        >
                         <button
                             id="delete-button"
-                            onclick={deleteLetter}
-                            style:width="85px">Delete</button
-                        >
-                        <button
-                            id="enter-button"
-                            onclick={checkWord}
-                            style:width="85px">Submit</button
+                            style:width="132px"
+                            onclick={() => {
+                                showModal = true;
+                            }}>View {gameOver ? "Results" : "Score"}</button
                         >
                     </div>
-                {/if}
-                <div class="flex-hor">
-                    <button
-                        style:width="132px"
-                        id="delete-button"
-                        onclick={() => {
-                            showFoundWords = true;
-                        }}>View Words</button
-                    >
-                    <button
-                        id="delete-button"
-                        style:width="132px"
-                        onclick={() => {
-                            showModal = true;
-                        }}>View {gameOver ? "Results" : "Score"}</button
-                    >
                 </div>
             </div>
         </div>
@@ -653,10 +663,9 @@
                     ><i class="ti ti-share"></i> Share Results</button
                 >
             </div>
-            <a
-                href="https://docs.google.com/forms/d/e/1FAIpQLSfzk0dC8SsfzfbbCXP4_YOsIw6ja_9zdOIVki3L48HX9QH-pg/viewform?usp=dialog"
-                >Help us improve Sharks! <u>Share your feedback.</u></a
-            >
+            <a target="_blank" href="https://forms.gle/k3vyE1WCEuwJyVPN7">
+                Help us improve Sharks! <u>Share your feedback.</u>
+            </a>
         </div>
     </div>
 </div>
@@ -712,9 +721,13 @@
     </div>
 </div>
 
-<div id="tsparticles"></div>
+<Particles bind:this={particles}></Particles>
 
 <style>
+    .game-options {
+        position: relative;
+        z-index: 99;
+    }
     .icon-button {
         border: none;
         min-width: 0;
@@ -746,9 +759,6 @@
         margin: 0 !important;
         font-weight: normal;
         height: fit-content !important;
-    }
-    #tsparticles {
-        background: red;
     }
     .game-splash-inner {
         display: flex;
