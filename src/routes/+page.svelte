@@ -275,6 +275,7 @@
             maxLength = Math.max(w.length, maxLength);
             if (w.length == maxLength) maxI = i;
         });
+        console.log(possibleWords)
 
         let savedData = loadData("sharks-today");
         if (savedData != null && savedData.date == gameSeed) {
@@ -334,12 +335,12 @@
             showMessage("Too short.");
             return;
         }
-        if (!correctWords.includes(typedWord.toLowerCase())) {
+        if (!correctWords.includes(typedWord.toUpperCase())) {
             shakeWordsNo();
             showMessage("Not in word bank.");
             return;
         }
-        if (foundWords.includes(typedWord.toLowerCase())) {
+        if (foundWords.includes(typedWord.toUpperCase())) {
             shakeWordsNo();
             showMessage("Word already found.");
             return;
