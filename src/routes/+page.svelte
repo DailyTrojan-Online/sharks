@@ -275,7 +275,6 @@
             maxLength = Math.max(w.length, maxLength);
             if (w.length == maxLength) maxI = i;
         });
-        console.log(possibleWords)
 
         let savedData = loadData("sharks-today");
         if (savedData != null && savedData.date == gameSeed) {
