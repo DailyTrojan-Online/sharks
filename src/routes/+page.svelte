@@ -236,7 +236,6 @@
     }
 
     function init() {
-      console.log(words.filter((word)=>word.length>3))
         vowelCount += DTGCore.randomInt(0, 2);
         DTGCore.randomFloat();
         for (let i = 0; i < 20; i++) {
@@ -406,9 +405,6 @@
         wordsLeftToFind = correctWords.filter((word) => {
             return !foundWords.includes(word);
         }).length;
-        console.log(correctWords.filter((word) => {
-            return !foundWords.includes(word);
-        }))
         if (!isUnfoundWord) {
             blockInput = true;
             setTimeout(() => {
