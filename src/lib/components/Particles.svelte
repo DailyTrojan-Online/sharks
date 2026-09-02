@@ -18,8 +18,6 @@
         canvas.width = window.innerWidth * window.devicePixelRatio;
         canvas.height = window.innerHeight * window.devicePixelRatio;
         ctx = canvas.getContext("2d")!;
-        ctx.fillStyle = "red";
-        ctx.fillRect(0, 0, 10, 10);
         requestAnimationFrame(render);
     });
 
@@ -78,6 +76,13 @@
     }
 </script>
 
+<svelte:window
+    onresize={() => {
+        canvas.width = window.innerWidth * window.devicePixelRatio;
+        canvas.height = window.innerHeight * window.devicePixelRatio;
+    }}
+/>
+
 {#if debug}
     <div class="debug">
         <div>
@@ -112,7 +117,7 @@
 <style>
     canvas {
         width: 100vw;
-        height: 100vh;
+        height: 100dvh;
         position: fixed;
         top: 0;
         left: 0;

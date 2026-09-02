@@ -20,7 +20,11 @@
     import { Spring } from "svelte/motion";
     import Particles from "$lib/components/Particles.svelte";
 
-    function trackEvent(event: string, error?: string, data?: Record<string, unknown>) {
+    function trackEvent(
+        event: string,
+        error?: string,
+        data?: Record<string, unknown>,
+    ) {
         const payload: {
             url: string;
             game: string;
@@ -34,11 +38,14 @@
         };
         if (error) payload.error = error;
         if (data) payload.data = data;
-        fetch("https://ancile.dailytrojandigitalmanaging.workers.dev/api/analytics/games", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-        }).catch(() => {});
+        fetch(
+            "https://ancile.dailytrojandigitalmanaging.workers.dev/api/analytics/games",
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            },
+        ).catch(() => {});
     }
 
     let gameSplash: HTMLElement | null = null;
@@ -60,9 +67,15 @@
         window.addEventListener("error", (e) => {
             trackEvent("error", e.message ?? "unknown error");
         });
-        window.addEventListener("unhandledrejection", (e: PromiseRejectionEvent) => {
-            trackEvent("error", (e.reason?.message ?? e.reason) || "unhandled rejection");
-        });
+        window.addEventListener(
+            "unhandledrejection",
+            (e: PromiseRejectionEvent) => {
+                trackEvent(
+                    "error",
+                    (e.reason?.message ?? e.reason) || "unhandled rejection",
+                );
+            },
+        );
         try {
             init();
         } catch (e: any) {
@@ -223,6 +236,7 @@
     }
 
     function init() {
+      console.log(words.filter((word)=>word.length>3))
         vowelCount += DTGCore.randomInt(0, 2);
         DTGCore.randomFloat();
         for (let i = 0; i < 20; i++) {
@@ -382,7 +396,7 @@
                 return true;
             });
         }
-        foundWords.push(typedWord.toLowerCase());
+        foundWords.push(typedWord.toUpperCase());
         let isUnfoundWord = false;
         correctWords.forEach((word) => {
             if (foundWords.indexOf(word) == -1) {
@@ -392,6 +406,9 @@
         wordsLeftToFind = correctWords.filter((word) => {
             return !foundWords.includes(word);
         }).length;
+        console.log(correctWords.filter((word) => {
+            return !foundWords.includes(word);
+        }))
         if (!isUnfoundWord) {
             blockInput = true;
             setTimeout(() => {
@@ -402,7 +419,6 @@
         saveGameToHistory();
         offsetProgressDots();
     }
-
     const mobileCheck = function () {
         let check = false;
         (function (a) {
@@ -424,13 +440,15 @@
         }
         return str.charAt(0).toUpperCase() + str.slice(1);
     }
-    let completeCopyFormat = "{0}\nI found {1} word{2} and got {4} points in Sharks!\n{3}";
+    let completeCopyFormat =
+        "{0}\nI found {1} word{2} and got {4} points in Sharks!\n{3}";
     function copyResultsString() {
-        const shareMethod = window.flutter_inappwebview != null
-            ? "flutter"
-            : mobileCheck()
-              ? "native"
-              : "clipboard";
+        const shareMethod =
+            window.flutter_inappwebview != null
+                ? "flutter"
+                : mobileCheck()
+                  ? "native"
+                  : "clipboard";
         trackEvent("share", undefined, {
             method: shareMethod,
             wordsFound,
@@ -454,19 +472,21 @@
                 ),
             );
         } else if (mobileCheck()) {
-            navigator.share({
-                text: DTGCore.formatString(
-                    completeCopyFormat,
-                    date,
-                    wordsFound,
-                    wordsFound == 1 ? "" : "s",
-                    "https://dailytrojan-online.github.io/sharks/",
-                    totalPoints,
-                ),
-                url: "https://dailytrojan-online.github.io/sharks/",
-            }).catch((e: any) => {
-                trackEvent("share_error", e?.message ?? String(e));
-            });
+            navigator
+                .share({
+                    text: DTGCore.formatString(
+                        completeCopyFormat,
+                        date,
+                        wordsFound,
+                        wordsFound == 1 ? "" : "s",
+                        "https://dailytrojan-online.github.io/sharks/",
+                        totalPoints,
+                    ),
+                    url: "https://dailytrojan-online.github.io/sharks/",
+                })
+                .catch((e: any) => {
+                    trackEvent("share_error", e?.message ?? String(e));
+                });
         } else {
             DTGCore.showToast("Results copied to clipboard!", "ti-clipboard");
             DTGCore.copyToClipboard(
@@ -715,7 +735,8 @@
             <h1 id="modal-title">{gameOver ? "All done!" : "In deep water"}</h1>
             <h2 style:font-weight="normal">
                 {gameOver ? "You" : "You've"} found
-                <strong id="result-time">{wordsFound}</strong> words and have {totalPoints} points.
+                <strong id="result-time">{wordsFound}</strong> words and have {totalPoints}
+                points.
             </h2>
             <button
                 class="close-button"
@@ -725,10 +746,8 @@
                 }}><i class="ti ti-x"></i></button
             >
             <div class="flex-hor">
-                <button
-                    onclick={() => {
-                        DTGCore.homeRedirect();
-                    }}><i class="ti ti-device-gamepad"></i>All Games</button
+                <a class="button"
+                    href="https://dailytrojan.com/games"><i class="ti ti-device-gamepad"></i>All Games</a
                 >
                 <button class="button-share" onclick={copyResultsString}
                     ><i class="ti ti-share"></i> Share Results</button

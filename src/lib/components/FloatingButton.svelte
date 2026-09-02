@@ -81,6 +81,7 @@
     });
     let down = false;
     function pointerdown() {
+      if(disabled) return;
         down = true;
     }
 
@@ -178,5 +179,5 @@
             width: 13.75vw;
         }
     }
-    
+
 </style>
