@@ -19,6 +19,28 @@
     import { cubicIn, cubicOut } from "svelte/easing";
     import { Spring } from "svelte/motion";
     import Particles from "$lib/components/Particles.svelte";
+
+    function trackEvent(event: string, error?: string, data?: Record<string, unknown>) {
+        const payload: {
+            url: string;
+            game: string;
+            event: string;
+            error?: string;
+            data?: Record<string, unknown>;
+        } = {
+            url: window.location.href,
+            game: "sharks",
+            event,
+        };
+        if (error) payload.error = error;
+        if (data) payload.data = data;
+        fetch("https://ancile.dailytrojandigitalmanaging.workers.dev/api/analytics/games", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        }).catch(() => {});
+    }
+
     let gameSplash: HTMLElement | null = null;
     let gameDate: HTMLElement | null = null;
     let DTGCore: DTGameCore;
@@ -35,14 +57,34 @@
     onMount(() => {
         DTGCore = new DTGameCore(gameSplash, gameDate);
         window.DTGCore = DTGCore;
-        init();
-
+        window.addEventListener("error", (e) => {
+            trackEvent("error", e.message ?? "unknown error");
+        });
+        window.addEventListener("unhandledrejection", (e: PromiseRejectionEvent) => {
+            trackEvent("error", (e.reason?.message ?? e.reason) || "unhandled rejection");
+        });
+        try {
+            init();
+        } catch (e: any) {
+            trackEvent("load_error", e?.message ?? String(e));
+            return;
+        }
+        trackEvent("load", undefined, {
+            wordsFound,
+            gameOver,
+            totalPoints,
+        });
         setTimeout(() => {
             splashReady = true;
         }, 1);
     });
 
     function playGame() {
+        trackEvent("play", undefined, {
+            resume: wordsFound > 0,
+            gameOver,
+            wordsFound,
+        });
         DTGCore.hideSplashScreen();
 
         if (gameOver) {
@@ -110,6 +152,10 @@
     function finishGame() {
         gameOver = true;
         showModal = true;
+        trackEvent("win", undefined, {
+            wordsFound,
+            totalPoints,
+        });
         saveGameProgress();
         saveGameToHistory();
     }
@@ -380,6 +426,16 @@
     }
     let completeCopyFormat = "{0}\nI found {1} word{2} in Sharks!\n{3}";
     function copyResultsString() {
+        const shareMethod = window.flutter_inappwebview != null
+            ? "flutter"
+            : mobileCheck()
+              ? "native"
+              : "clipboard";
+        trackEvent("share", undefined, {
+            method: shareMethod,
+            wordsFound,
+            totalPoints,
+        });
         let date = new Intl.DateTimeFormat("en-US", {
             day: "2-digit",
             month: "2-digit",
@@ -406,6 +462,8 @@
                     "https://dailytrojan-online.github.io/sharks/",
                 ),
                 url: "https://dailytrojan-online.github.io/sharks/",
+            }).catch((e: any) => {
+                trackEvent("share_error", e?.message ?? String(e));
             });
         } else {
             DTGCore.showToast("Results copied to clipboard!", "ti-clipboard");
@@ -459,9 +517,14 @@
     }
 
     function loadData(id: string) {
-        let item = localStorage.getItem(id);
-        if (item != null) return JSON.parse(item);
-        else return null;
+        try {
+            let item = localStorage.getItem(id);
+            if (item != null) return JSON.parse(item);
+            else return null;
+        } catch (e: any) {
+            trackEvent("load_data_error", e?.message ?? String(e));
+            return null;
+        }
     }
 
     let progressDotWrapper: HTMLElement | null = $state(null);
@@ -628,6 +691,11 @@
                             id="delete-button"
                             style:width="132px"
                             onclick={() => {
+                                if (!gameOver)
+                                    trackEvent("view_score", undefined, {
+                                        wordsFound,
+                                        totalPoints,
+                                    });
                                 showModal = true;
                             }}>View {gameOver ? "Results" : "Score"}</button
                         >
