@@ -424,7 +424,7 @@
         }
         return str.charAt(0).toUpperCase() + str.slice(1);
     }
-    let completeCopyFormat = "{0}\nI found {1} word{2} in Sharks!\n{3}";
+    let completeCopyFormat = "{0}\nI found {1} word{2} and got {4} points in Sharks!\n{3}";
     function copyResultsString() {
         const shareMethod = window.flutter_inappwebview != null
             ? "flutter"
@@ -450,6 +450,7 @@
                     wordsFound,
                     wordsFound == 1 ? "" : "s",
                     "https://dailytrojan-online.github.io/sharks/",
+                    totalPoints,
                 ),
             );
         } else if (mobileCheck()) {
@@ -460,6 +461,7 @@
                     wordsFound,
                     wordsFound == 1 ? "" : "s",
                     "https://dailytrojan-online.github.io/sharks/",
+                    totalPoints,
                 ),
                 url: "https://dailytrojan-online.github.io/sharks/",
             }).catch((e: any) => {
@@ -474,6 +476,7 @@
                     wordsFound,
                     wordsFound == 1 ? "" : "s",
                     "https://dailytrojan-online.github.io/sharks/",
+                    totalPoints,
                 ),
             );
         }
@@ -712,7 +715,7 @@
             <h1 id="modal-title">{gameOver ? "All done!" : "In deep water"}</h1>
             <h2 style:font-weight="normal">
                 {gameOver ? "You" : "You've"} found
-                <strong id="result-time">{wordsFound}</strong> words.
+                <strong id="result-time">{wordsFound}</strong> words and have {totalPoints} points.
             </h2>
             <button
                 class="close-button"
