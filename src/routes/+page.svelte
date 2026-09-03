@@ -2,7 +2,7 @@
     import { tsParticles } from "@tsparticles/engine";
     import { loadSlim } from "@tsparticles/slim";
     import { loadEmittersPlugin } from "@tsparticles/plugin-emitters";
-    import { onMount } from "svelte";
+    import { onMount, settled } from "svelte";
     import chroma from "chroma-js";
     import { loadFull } from "tsparticles";
     import NumberFlow from "@number-flow/svelte";
@@ -19,6 +19,7 @@
     import { cubicIn, cubicOut } from "svelte/easing";
     import { Spring } from "svelte/motion";
     import Particles from "$lib/components/Particles.svelte";
+    import { play } from "cuelume";
 
     function trackEvent(
         event: string,
@@ -317,12 +318,14 @@
 
     function typeLetter(letter: string) {
         if (letters.includes(letter) && typedWord.length < maxWordLength) {
+            play("press");
             typedWord += letter;
         }
     }
 
     function deleteLetter() {
         typedWord = typedWord.slice(0, -1);
+        play("release", { volume: 0.8 });
     }
 
     function handleKeyDown(event: KeyboardEvent) {
@@ -345,18 +348,24 @@
         if (typedWord.length < 4) {
             shakeWordsNo();
             showMessage("Too short.");
+            play("error");
+
             return;
         }
         if (!correctWords.includes(typedWord.toUpperCase())) {
             shakeWordsNo();
             showMessage("Not in word bank.");
+            play("error");
+
             return;
         }
         if (foundWords.includes(typedWord.toUpperCase())) {
             shakeWordsNo();
             showMessage("Word already found.");
+            play("error");
             return;
         }
+        play("success");
         wordsFound++;
         let originalUses = [...uses];
         for (let i = 0; i < typedWord.length; i++) {
@@ -383,17 +392,22 @@
             }
             let i =
                 indexes[Math.floor(DTGCore.randomInt(0, indexes.length - 1))];
-            disabled[i] = true;
-            //filter out now based on the new disabled;
-            correctWords = correctWords.filter((word) => {
-                for (let char of word.toUpperCase()) {
-                    let i = letters.indexOf(char);
-                    if (disabled[i]) {
-                        return false;
+
+            setTimeout(() => {
+                disabled[i] = true;
+                play("tick");
+                play("whisper");
+                //filter out now based on the new disabled;
+                correctWords = correctWords.filter((word) => {
+                    for (let char of word.toUpperCase()) {
+                        let i = letters.indexOf(char);
+                        if (disabled[i]) {
+                            return false;
+                        }
                     }
-                }
-                return true;
-            });
+                    return true;
+                });
+            }, 800);
         }
         foundWords.push(typedWord.toUpperCase());
         let isUnfoundWord = false;
@@ -742,8 +756,8 @@
                 }}><i class="ti ti-x"></i></button
             >
             <div class="flex-hor">
-                <a class="button"
-                    href="https://dailytrojan.com/games"><i class="ti ti-device-gamepad"></i>All Games</a
+                <a class="button" href="https://dailytrojan.com/games"
+                    ><i class="ti ti-device-gamepad"></i>All Games</a
                 >
                 <button class="button-share" onclick={copyResultsString}
                     ><i class="ti ti-share"></i> Share Results</button
