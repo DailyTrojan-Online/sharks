@@ -21,34 +21,6 @@
     import Particles from "$lib/components/Particles.svelte";
     import { play } from "cuelume";
 
-    function trackEvent(
-        event: string,
-        error?: string,
-        data?: Record<string, unknown>,
-    ) {
-        const payload: {
-            url: string;
-            game: string;
-            event: string;
-            error?: string;
-            data?: Record<string, unknown>;
-        } = {
-            url: window.location.href,
-            game: "sharks",
-            event,
-        };
-        if (error) payload.error = error;
-        if (data) payload.data = data;
-        fetch(
-            "https://ancile.dailytrojandigitalmanaging.workers.dev/api/analytics/games",
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-            },
-        ).catch(() => {});
-    }
-
     let gameSplash: HTMLElement | null = null;
     let gameDate: HTMLElement | null = null;
     let DTGCore: DTGameCore;
@@ -66,39 +38,38 @@
         DTGCore = new DTGameCore(gameSplash, gameDate);
         window.DTGCore = DTGCore;
         window.addEventListener("error", (e) => {
-            trackEvent("error", e.message ?? "unknown error");
+            DTGCore.trackAnalytics("error", "sharks", undefined, e.message ?? "unknown error")
         });
         window.addEventListener(
             "unhandledrejection",
             (e: PromiseRejectionEvent) => {
-                trackEvent(
-                    "error",
-                    (e.reason?.message ?? e.reason) || "unhandled rejection",
-                );
+                DTGCore.trackAnalytics("error", "sharks", undefined, 
+                  (e.reason?.message ?? e.reason) || "unhandled rejection",)
             },
         );
         try {
             init();
         } catch (e: any) {
-            trackEvent("load_error", e?.message ?? String(e));
+            DTGCore.trackAnalytics("load_error", "sharks", undefined, 
+              e?.message ?? String(e))
             return;
         }
-        trackEvent("load", undefined, {
+        DTGCore.trackAnalytics("load", "sharks", {
             wordsFound,
             gameOver,
             totalPoints,
-        });
+        })
         setTimeout(() => {
             splashReady = true;
         }, 1);
     });
 
     function playGame() {
-        trackEvent("play", undefined, {
+        DTGCore.trackAnalytics("play", "sharks", {
             resume: wordsFound > 0,
             gameOver,
             wordsFound,
-        });
+        })
         DTGCore.hideSplashScreen();
 
         if (gameOver) {
@@ -166,10 +137,10 @@
     function finishGame() {
         gameOver = true;
         showModal = true;
-        trackEvent("win", undefined, {
-            wordsFound,
-            totalPoints,
-        });
+        DTGCore.trackAnalytics("win", "sharks", {
+          wordsFound,
+          totalPoints
+        })
         saveGameProgress();
         saveGameToHistory();
     }
@@ -459,11 +430,11 @@
                 : mobileCheck()
                   ? "native"
                   : "clipboard";
-        trackEvent("share", undefined, {
+        DTGCore.trackAnalytics("share", "sharks", {
             method: shareMethod,
             wordsFound,
             totalPoints,
-        });
+        })
         let date = new Intl.DateTimeFormat("en-US", {
             day: "2-digit",
             month: "2-digit",
@@ -495,7 +466,7 @@
                     url: "https://dailytrojan-online.github.io/sharks/",
                 })
                 .catch((e: any) => {
-                    trackEvent("share_error", e?.message ?? String(e));
+                    DTGCore.trackAnalytics("share_error", "sharks",undefined, e?.message ?? String(e))
                 });
         } else {
             DTGCore.showToast("Results copied to clipboard!", "ti-clipboard");
@@ -555,7 +526,7 @@
             if (item != null) return JSON.parse(item);
             else return null;
         } catch (e: any) {
-            trackEvent("load_data_error", e?.message ?? String(e));
+            DTGCore.trackAnalytics("load_data_error", "sharks", undefined, e?.message ?? String(e))
             return null;
         }
     }
@@ -725,10 +696,11 @@
                             style:width="132px"
                             onclick={() => {
                                 if (!gameOver)
-                                    trackEvent("view_score", undefined, {
-                                        wordsFound,
-                                        totalPoints,
-                                    });
+                                DTGCore.trackAnalytics("view_score", "sharks",{
+                                    wordsFound,
+                                    totalPoints,
+                                })
+                               
                                 showModal = true;
                             }}>View {gameOver ? "Results" : "Score"}</button
                         >
