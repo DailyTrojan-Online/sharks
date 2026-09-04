@@ -460,7 +460,7 @@
                         date,
                         wordsFound,
                         wordsFound == 1 ? "" : "s",
-                        "https://dailytrojan-online.github.io/sharks/",
+                        "",
                         totalPoints,
                     ),
                     url: "https://dailytrojan-online.github.io/sharks/",
