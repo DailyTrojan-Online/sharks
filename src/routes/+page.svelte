@@ -88,9 +88,9 @@
         if (gameOver) {
             finishGame();
         }
-        let firstTime = localStorage.getItem("firstTimePlayed") == null;
+        let firstTime = localStorage.getItem("sharks-ftue") == null;
         if (firstTime) {
-            localStorage.setItem("firstTimePlayed", "true");
+            localStorage.setItem("sharks-ftue", "true");
             showHowTo = true;
         }
     }
@@ -584,12 +584,13 @@
     }
 
     function saveData(id: string, data: any) {
+      if(localStorage == null || localStorage == undefined) return;
         localStorage.setItem(id, JSON.stringify(data));
         console.log("Saved data.");
     }
 
     function loadData(id: string) {
-      if (!localStorage) return null;
+      if(localStorage == null || localStorage == undefined) return null;
       let item = localStorage.getItem(id);
       if (item != null) return JSON.parse(item);
       else return null;
