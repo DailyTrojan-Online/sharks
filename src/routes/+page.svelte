@@ -436,7 +436,13 @@
     }
     let completeCopyFormat =
         "{0}\nI found {1} word{2} and got {4} points in Sharks!\n{3}";
+
     function copyResultsString() {
+        let date = new Intl.DateTimeFormat("en-US", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+        }).format(new Date());
         const shareMethod =
             window.flutter_inappwebview != null
                 ? "flutter"
@@ -448,56 +454,22 @@
             wordsFound,
             totalPoints,
         });
-        let date = new Intl.DateTimeFormat("en-US", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-        }).format(new Date());
+        const shareUrl = "https://dailytrojan-online.github.io/sharks/";
+        const shareText = DTGCore.formatString(
+            completeCopyFormat,
+            date,
+            wordsFound,
+            wordsFound == 1 ? "" : "s",
+            "https://dailytrojan-online.github.io/sharks/",
+            totalPoints,
+        );
         if (window.flutter_inappwebview != null) {
-            window.flutter_inappwebview.callHandler(
-                "requestShare",
-                DTGCore.formatString(
-                    completeCopyFormat,
-                    date,
-                    wordsFound,
-                    wordsFound == 1 ? "" : "s",
-                    "https://dailytrojan-online.github.io/sharks/",
-                    totalPoints,
-                ),
-            );
+            window.flutter_inappwebview.callHandler("requestShare", shareText);
         } else if (mobileCheck()) {
-            navigator
-                .share({
-                    text: DTGCore.formatString(
-                        completeCopyFormat,
-                        date,
-                        wordsFound,
-                        wordsFound == 1 ? "" : "s",
-                        "",
-                        totalPoints,
-                    ),
-                    url: "https://dailytrojan-online.github.io/sharks/",
-                })
-                .catch((e: any) => {
-                    DTGCore.trackAnalytics(
-                        "share_error",
-                        "sharks",
-                        undefined,
-                        e?.message ?? String(e),
-                    );
-                });
+            navigator.share({ text: shareText });
         } else {
-            DTGCore.showToast("Results copied to clipboard!", "ti-clipboard");
-            DTGCore.copyToClipboard(
-                DTGCore.formatString(
-                    completeCopyFormat,
-                    date,
-                    wordsFound,
-                    wordsFound == 1 ? "" : "s",
-                    "https://dailytrojan-online.github.io/sharks/",
-                    totalPoints,
-                ),
-            );
+            DTGCore.showToast("Results copied!", "ti-clipboard");
+            DTGCore.copyToClipboard(shareText);
         }
     }
 
@@ -530,20 +502,20 @@
                 points: number;
                 longestWord: string;
             }) => {
-              blank.totalPoints += h.points;
-              if(h.longestWord.length >= blank.longestWord.length) {
-                blank.longestWord = h.longestWord
-              }
-              blank.gamesPlayed++;
-              blank.wordsFound+= h.wordsFound;
-              
-              let currentDate = new Date(h.date);
-              if (areDatesConsecutive(currentDate, previousDate)) {
-                  blank.dailyStreak++;
-              } else {
-                  blank.dailyStreak = 1;
-              }
-              previousDate = currentDate;
+                blank.totalPoints += h.points;
+                if (h.longestWord.length >= blank.longestWord.length) {
+                    blank.longestWord = h.longestWord;
+                }
+                blank.gamesPlayed++;
+                blank.wordsFound += h.wordsFound;
+
+                let currentDate = new Date(h.date);
+                if (areDatesConsecutive(currentDate, previousDate)) {
+                    blank.dailyStreak++;
+                } else {
+                    blank.dailyStreak = 1;
+                }
+                previousDate = currentDate;
             },
         );
 
@@ -618,12 +590,12 @@
 
     function loadData(id: string) {
         try {
-          if(!localStorage) return null;
+            if (!localStorage) return null;
             let item = localStorage.getItem(id);
             if (item != null) return JSON.parse(item);
             else return null;
         } catch (e: any) {
-          console.log(e)
+            console.log(e);
             DTGCore.trackAnalytics(
                 "load_data_error",
                 "sharks",
@@ -823,7 +795,7 @@
             <img width="80" src={SharksLogo} alt="sharks logo" />
             <h1 id="modal-title">{gameOver ? "All done!" : "In deep water"}</h1>
             {#key showModal}
-            <div class="history-stats">
+                <div class="history-stats">
                     <div class="stat">
                         <h1>
                             {calculateStats().gamesPlayed}
@@ -842,15 +814,15 @@
                         </h1>
                         <p>Words</p>
                     </div>
-            </div>
-            <div class="history-stats">
+                </div>
+                <div class="history-stats">
                     <div class="stat stat-full">
                         <h1>
                             {calculateStats().longestWord}
                         </h1>
                         <p>Longest Word</p>
                     </div>
-            </div>
+                </div>
             {/key}
             <h2 style:font-weight="normal">
                 {gameOver ? "You" : "You've"} found
