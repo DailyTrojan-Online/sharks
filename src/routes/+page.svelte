@@ -589,21 +589,10 @@
     }
 
     function loadData(id: string) {
-        try {
-            if (!localStorage) return null;
-            let item = localStorage.getItem(id);
-            if (item != null) return JSON.parse(item);
-            else return null;
-        } catch (e: any) {
-            console.log(e);
-            DTGCore.trackAnalytics(
-                "load_data_error",
-                "sharks",
-                undefined,
-                e?.message ?? String(e),
-            );
-            return null;
-        }
+      if (!localStorage) return null;
+      let item = localStorage.getItem(id);
+      if (item != null) return JSON.parse(item);
+      else return null;
     }
 
     let progressDotWrapper: HTMLElement | null = $state(null);
