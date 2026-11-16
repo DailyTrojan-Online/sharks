@@ -503,7 +503,11 @@
                 longestWord?: string;
             }) => {
                 blank.totalPoints += h.points ?? 0;
-                if (h.longestWord && h.longestWord.length >= blank.longestWord.length) {
+                console.log(h.longestWord, h);
+                if (
+                    h.longestWord &&
+                    h.longestWord.length >= blank.longestWord.length
+                ) {
                     blank.longestWord = h.longestWord;
                 }
                 blank.gamesPlayed++;
@@ -563,7 +567,14 @@
             },
         );
         if (!found) {
-            history.push({ date: gameSeed, wordsFound: wordsFound });
+            history.push({
+                date: gameSeed,
+                wordsFound: wordsFound,
+                points: totalPoints,
+                longestWord: foundWords.reduce((longest, current) => {
+                    return current.length > longest.length ? current : longest;
+                }, ""),
+            });
         }
         saveData("sharks-history", history);
     }
@@ -584,16 +595,16 @@
     }
 
     function saveData(id: string, data: any) {
-      if (typeof localStorage === "undefined") return;
+        if (typeof localStorage === "undefined") return;
         localStorage.setItem(id, JSON.stringify(data));
         console.log("Saved data.");
     }
 
     function loadData(id: string) {
-      if (typeof localStorage === "undefined") return null;
-      let item = localStorage.getItem(id);
-      if (item != null) return JSON.parse(item);
-      else return null;
+        if (typeof localStorage === "undefined") return null;
+        let item = localStorage.getItem(id);
+        if (item != null) return JSON.parse(item);
+        else return null;
     }
 
     let progressDotWrapper: HTMLElement | null = $state(null);
