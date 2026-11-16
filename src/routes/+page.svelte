@@ -499,11 +499,11 @@
             (h: {
                 date: string;
                 wordsFound: number;
-                points: number;
-                longestWord: string;
+                points?: number;
+                longestWord?: string;
             }) => {
-                blank.totalPoints += h.points;
-                if (h.longestWord.length >= blank.longestWord.length) {
+                blank.totalPoints += h.points ?? 0;
+                if (h.longestWord && h.longestWord.length >= blank.longestWord.length) {
                     blank.longestWord = h.longestWord;
                 }
                 blank.gamesPlayed++;
