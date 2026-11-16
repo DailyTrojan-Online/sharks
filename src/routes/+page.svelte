@@ -38,27 +38,40 @@
         DTGCore = new DTGameCore(gameSplash, gameDate);
         window.DTGCore = DTGCore;
         window.addEventListener("error", (e) => {
-            DTGCore.trackAnalytics("error", "sharks", undefined, e.message ?? "unknown error")
+            DTGCore.trackAnalytics(
+                "error",
+                "sharks",
+                undefined,
+                e.message ?? "unknown error",
+            );
         });
         window.addEventListener(
             "unhandledrejection",
             (e: PromiseRejectionEvent) => {
-                DTGCore.trackAnalytics("error", "sharks", undefined, 
-                  (e.reason?.message ?? e.reason) || "unhandled rejection",)
+                DTGCore.trackAnalytics(
+                    "error",
+                    "sharks",
+                    undefined,
+                    (e.reason?.message ?? e.reason) || "unhandled rejection",
+                );
             },
         );
         try {
             init();
         } catch (e: any) {
-            DTGCore.trackAnalytics("load_error", "sharks", undefined, 
-              e?.message ?? String(e))
+            DTGCore.trackAnalytics(
+                "load_error",
+                "sharks",
+                undefined,
+                e?.message ?? String(e),
+            );
             return;
         }
         DTGCore.trackAnalytics("load", "sharks", {
             wordsFound,
             gameOver,
             totalPoints,
-        })
+        });
         setTimeout(() => {
             splashReady = true;
         }, 1);
@@ -69,7 +82,7 @@
             resume: wordsFound > 0,
             gameOver,
             wordsFound,
-        })
+        });
         DTGCore.hideSplashScreen();
 
         if (gameOver) {
@@ -138,9 +151,9 @@
         gameOver = true;
         showModal = true;
         DTGCore.trackAnalytics("win", "sharks", {
-          wordsFound,
-          totalPoints
-        })
+            wordsFound,
+            totalPoints,
+        });
         saveGameProgress();
         saveGameToHistory();
     }
@@ -434,7 +447,7 @@
             method: shareMethod,
             wordsFound,
             totalPoints,
-        })
+        });
         let date = new Intl.DateTimeFormat("en-US", {
             day: "2-digit",
             month: "2-digit",
@@ -466,7 +479,12 @@
                     url: "https://dailytrojan-online.github.io/sharks/",
                 })
                 .catch((e: any) => {
-                    DTGCore.trackAnalytics("share_error", "sharks",undefined, e?.message ?? String(e))
+                    DTGCore.trackAnalytics(
+                        "share_error",
+                        "sharks",
+                        undefined,
+                        e?.message ?? String(e),
+                    );
                 });
         } else {
             DTGCore.showToast("Results copied to clipboard!", "ti-clipboard");
@@ -483,17 +501,95 @@
         }
     }
 
+    function calculateStats(): {
+        totalPoints: number;
+        longestWord: string;
+        dailyStreak: number;
+        wordsFound: number;
+        gamesPlayed: number;
+    } {
+        let history = loadData("sharks-history");
+        let blank = {
+            totalPoints: 0,
+            longestWord: "",
+            dailyStreak: 0,
+            wordsFound: 0,
+            gamesPlayed: 0,
+        };
+        if (history == null || history.length < 1) return blank;
+        let today = new Intl.DateTimeFormat("en-US", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+        }).format(new Date());
+        let previousDate = new Date(history[0].date);
+        history.forEach(
+            (h: {
+                date: string;
+                wordsFound: number;
+                points: number;
+                longestWord: string;
+            }) => {
+              blank.totalPoints += h.points;
+              if(h.longestWord.length >= blank.longestWord.length) {
+                blank.longestWord = h.longestWord
+              }
+              blank.gamesPlayed++;
+              blank.wordsFound+= h.wordsFound;
+              
+              let currentDate = new Date(h.date);
+              if (areDatesConsecutive(currentDate, previousDate)) {
+                  blank.dailyStreak++;
+              } else {
+                  blank.dailyStreak = 1;
+              }
+              previousDate = currentDate;
+            },
+        );
+
+        return blank;
+    }
+    function areDatesConsecutive(date1: Date, date2: Date) {
+        const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+        const utc1 = Date.UTC(
+            date1.getFullYear(),
+            date1.getMonth(),
+            date1.getDate(),
+        );
+        const utc2 = Date.UTC(
+            date2.getFullYear(),
+            date2.getMonth(),
+            date2.getDate(),
+        );
+
+        return Math.abs(utc2 - utc1) === MS_PER_DAY;
+    }
+
     function saveGameToHistory() {
         let history = loadData("sharks-history") ?? [];
         //if there is history for today, update that history, otherwise add to the list
         let found = false;
-        history.forEach((e: { date: any; wordsFound: any }) => {
-            if (e.date == gameSeed && !found) {
-                e.wordsFound = wordsFound;
-                found = true;
-                return;
-            }
-        });
+        history.forEach(
+            (e: {
+                date: any;
+                wordsFound: any;
+                points: any;
+                longestWord: string;
+            }) => {
+                if (e.date == gameSeed && !found) {
+                    e.wordsFound = wordsFound;
+                    e.points = totalPoints;
+                    e.longestWord = foundWords.reduce((longest, current) => {
+                        return current.length > longest.length
+                            ? current
+                            : longest;
+                    }, "");
+                    found = true;
+                    return;
+                }
+            },
+        );
         if (!found) {
             history.push({ date: gameSeed, wordsFound: wordsFound });
         }
@@ -522,11 +618,18 @@
 
     function loadData(id: string) {
         try {
+          if(!localStorage) return null;
             let item = localStorage.getItem(id);
             if (item != null) return JSON.parse(item);
             else return null;
         } catch (e: any) {
-            DTGCore.trackAnalytics("load_data_error", "sharks", undefined, e?.message ?? String(e))
+          console.log(e)
+            DTGCore.trackAnalytics(
+                "load_data_error",
+                "sharks",
+                undefined,
+                e?.message ?? String(e),
+            );
             return null;
         }
     }
@@ -582,7 +685,7 @@
             <div class="word-container" id="word-container"></div>
             <div class="points-bar">
                 <div class="spread">
-                    <div class="todays-theme">Words Found: {wordsFound}</div>
+                    <div class="todays-theme">{wordsFound} Words Found</div>
                     <div class="todays-theme">
                         <NumberFlow value={totalPoints} /> Points
                     </div>
@@ -696,13 +799,17 @@
                             style:width="132px"
                             onclick={() => {
                                 if (!gameOver)
-                                DTGCore.trackAnalytics("view_score", "sharks",{
-                                    wordsFound,
-                                    totalPoints,
-                                })
-                               
+                                    DTGCore.trackAnalytics(
+                                        "view_score",
+                                        "sharks",
+                                        {
+                                            wordsFound,
+                                            totalPoints,
+                                        },
+                                    );
+
                                 showModal = true;
-                            }}>View {gameOver ? "Results" : "Score"}</button
+                            }}>View {gameOver ? "Results" : "Stats"}</button
                         >
                     </div>
                 </div>
@@ -715,6 +822,36 @@
         <div class="modal-inner">
             <img width="80" src={SharksLogo} alt="sharks logo" />
             <h1 id="modal-title">{gameOver ? "All done!" : "In deep water"}</h1>
+            {#key showModal}
+            <div class="history-stats">
+                    <div class="stat">
+                        <h1>
+                            {calculateStats().gamesPlayed}
+                        </h1>
+                        <p>Puzzles</p>
+                    </div>
+                    <div class="stat">
+                        <h1>
+                            {calculateStats().dailyStreak}
+                        </h1>
+                        <p>Streak</p>
+                    </div>
+                    <div class="stat">
+                        <h1>
+                            {calculateStats().wordsFound}
+                        </h1>
+                        <p>Words</p>
+                    </div>
+            </div>
+            <div class="history-stats">
+                    <div class="stat stat-full">
+                        <h1>
+                            {calculateStats().longestWord}
+                        </h1>
+                        <p>Longest Word</p>
+                    </div>
+            </div>
+            {/key}
             <h2 style:font-weight="normal">
                 {gameOver ? "You" : "You've"} found
                 <strong id="result-time">{wordsFound}</strong> words and have {totalPoints}
