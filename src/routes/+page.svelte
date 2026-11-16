@@ -584,13 +584,13 @@
     }
 
     function saveData(id: string, data: any) {
-      if(localStorage == null || localStorage == undefined) return;
+      if (typeof localStorage === "undefined") return;
         localStorage.setItem(id, JSON.stringify(data));
         console.log("Saved data.");
     }
 
     function loadData(id: string) {
-      if(localStorage == null || localStorage == undefined) return null;
+      if (typeof localStorage === "undefined") return null;
       let item = localStorage.getItem(id);
       if (item != null) return JSON.parse(item);
       else return null;
