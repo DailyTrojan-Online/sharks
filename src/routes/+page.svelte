@@ -115,12 +115,15 @@
     let letters: string[] = $state([]);
     let uses: number[] = $state([]);
     let disabled: boolean[] = $state([]);
+    let disabledVisual: boolean[] = $state([]);
     let wordsFound = $state(0);
     let wordsLeftToFind = $state(0);
     $inspect(wordsLeftToFind);
     let sharkInterval = 4;
 
     let foundWords: string[] = $state([]);
+    $inspect(foundWords);
+    $inspect(wordsLeftToFind)
 
     let gameOver = $state(false);
     let showModal = $state(false);
@@ -232,6 +235,7 @@
             letters.push(vowels[randomIndex]);
             uses.push(0);
             disabled.push(false);
+            disabledVisual.push(false);
 
             //remove letter
             vowels.splice(randomIndex, 1);
@@ -242,6 +246,7 @@
             letters.push(allLetters[randomIndex]);
             uses.push(0);
             disabled.push(false);
+            disabledVisual.push(false)
 
             //remove letter
             allLetters.splice(randomIndex, 1);
@@ -278,6 +283,7 @@
         if (savedData != null && savedData.date == gameSeed) {
             wordsFound = savedData.amountOfWordsFound;
             disabled = savedData.disabled;
+            disabledVisual = disabled;
             uses = savedData.uses;
             foundWords = savedData.foundWords;
             totalPoints = savedData.points;
@@ -376,21 +382,23 @@
             }
             let i =
                 indexes[Math.floor(DTGCore.randomInt(0, indexes.length - 1))];
+            disabled[i] = true;
+            //filter out now based on the new disabled;
+            correctWords = correctWords.filter((word) => {
+                for (let char of word.toUpperCase()) {
+                    let i = letters.indexOf(char);
+                    if (disabled[i]) {
+                        return false;
+                    }
+                }
+                return true;
+            });
 
             setTimeout(() => {
-                disabled[i] = true;
+              //copy so that the buttons dont show the disabled button until its time
+                disabledVisual = disabled;
                 play("tick");
                 play("whisper");
-                //filter out now based on the new disabled;
-                correctWords = correctWords.filter((word) => {
-                    for (let char of word.toUpperCase()) {
-                        let i = letters.indexOf(char);
-                        if (disabled[i]) {
-                            return false;
-                        }
-                    }
-                    return true;
-                });
             }, 800);
         }
         foundWords.push(typedWord.toUpperCase());
@@ -735,7 +743,7 @@
                 <div class="letters">
                     {#each letters as letter, i}
                         <FloatingButton
-                            disabled={disabled[i]}
+                            disabled={disabledVisual[i]}
                             fear={(wordsFound + 1) % sharkInterval == 0}
                             character={letter}
                             timesPlayed={uses[i]}
