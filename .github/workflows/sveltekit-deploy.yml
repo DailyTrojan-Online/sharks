@@ -4,19 +4,23 @@ on:
   push:
     branches: [main]
 
+# Prevent overlapping builds from publishing at the same time.
+concurrency:
+  group: publish-game-main
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    
     permissions:
-      contents: write  
+      contents: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # REQUIRED to push to another branch
+          fetch-depth: 0
 
       - name: Install Node.js
         uses: actions/setup-node@v4
@@ -37,6 +41,39 @@ jobs:
           BASE_PATH: '/${{ github.event.repository.name }}'
         run: npm run build
 
+      - name: Package game
+        working-directory: build
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f index.html
+          zip -r "$RUNNER_TEMP/game.zip" .
+
+      - name: Generate manifest
+        env:
+          GAME_ID: ${{ github.event.repository.name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          VERSION="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          TAG="game-${VERSION}"
+          HASH="$(sha256sum "$RUNNER_TEMP/game.zip" | cut -d ' ' -f 1)"
+          DOWNLOAD_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/game.zip"
+
+          jq -n \
+            --arg id "$GAME_ID" \
+            --arg version "$VERSION" \
+            --arg url "$DOWNLOAD_URL" \
+            --arg sha256 "$HASH" \
+            '{
+              id: $id,
+              version: $version,
+              url: $url,
+              sha256: $sha256,
+              entrypoint: "index.html"
+            }' > "$RUNNER_TEMP/manifest.json"
+
       - name: Push build folder to build branch
         uses: peaceiris/actions-gh-pages@v4
         with:
@@ -44,3 +81,25 @@ jobs:
           publish_branch: build
           publish_dir: build
           force_orphan: true
+
+      - name: Publish game release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          GAME_ID: ${{ github.event.repository.name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          VERSION="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          TAG="game-${VERSION}"
+
+          gh release create "$TAG" \
+            "$RUNNER_TEMP/game.zip" \
+            "$RUNNER_TEMP/manifest.json" \
+            --target "$GITHUB_SHA" \
+            --title "${GAME_ID} ${VERSION}" \
+            --notes "Automated game build from ${GITHUB_SHA}." \
+            --draft
+
+          gh release edit "$TAG" --draft=false --latest
